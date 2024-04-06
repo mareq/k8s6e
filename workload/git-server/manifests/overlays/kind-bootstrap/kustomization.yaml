@@ -1,0 +1,25 @@
+resources:
+- ../../base
+patches:
+  # remove all Ingresses
+  # 
+  # This is bootstrap so there is no load-balancer nor ingress controller.
+  # So there is no point in having Ingress, since there is no one to assign
+  # it an external IP address. Moreover, it would cause GitOps tools to keep
+  # the Git server Application in intermediate state, because it would try
+  # to wait for the Ingress to get initialized with that external IP address.
+  #
+  # The Git server accessible from inside the cluster is necessary however.
+  # It is the source of all deployment files used by the GitOps tools
+  # for bootstraping and subsequently managing the cluster.
+  # It would be possible to just use an external Git server such as GitHub,
+  # but the goal of this demonstration is to provide self-contained solution.
+  - target:
+      name: .*
+      kind: Ingress
+    patch: |-
+      apiVersion: <ignored>
+      kind: <ignored>
+      metadata:
+        name: <ignored>
+      $patch: delete

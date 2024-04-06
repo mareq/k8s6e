@@ -22,3 +22,8 @@ An example Kubernetes cluster with working examples.
 
 - [Debug](./debug/shell/README.md): The troubleshooting pod providing interactive shell running inside the Kubernetes cluster.
 
+### Workload
+
+- [Git Server](./workload/git-server/README.md): Git server providing access to repositories over HTTP.
+
+

@@ -1,0 +1,122 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-smart-http-config
+  namespace: git-server
+data:
+  default.conf: |
+    server {
+      server_name _;
+      listen 8080;
+
+      location ~ ^/git/smart/(.+\.git)(/.*)?$ {
+        allow all;
+        auth_basic off;
+        #auth_basic "access denied";
+        #auth_basic_user_file /path/to/your/htpasswd;
+        client_max_body_size 0;
+        fastcgi_param SCRIPT_FILENAME /usr/lib/git-core/git-http-backend;
+        include fastcgi_params;
+        fastcgi_param GIT_ATTR_NOSYSTEM "1";
+        fastcgi_param GIT_HTTP_EXPORT_ALL "true";
+        fastcgi_param GIT_PROJECT_ROOT /mnt/git/$1/;
+        fastcgi_param PATH_INFO $2;
+        fastcgi_param REMOTE_USER $remote_user;
+        fastcgi_pass unix:/var/run/fcgiwrap.socket;
+      }
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-smart-http
+  namespace: git-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx-smart-http
+  template:
+    metadata:
+      labels:
+        app: nginx-smart-http
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.25.4
+        # NOTE: This is a very bad idea in production setting. Just build that Docker image, push it to the registry
+        # and deploy that instead of generic bare-bones image patched by hacks like this. It is done here this way
+        # because it makes it easier to make changes in this kind of minimal NON-PRODUCTION FOR-DEMONSTRATION-ONLY example.
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          set -x
+          # install dependencies
+          apt update -qqy
+          apt install -qqy git fcgiwrap spawn-fcgi
+          # spawn the fcgiwrap process
+          # - u, g: The user and group to run the FCGI script as.
+          # - s, U, G, M: The socket path and permissions of the Unix domain socket used for communication b/w the FCGI script and the web server.
+          # - P: The path to the PID file.
+          # - HOME=/nonexistent: The current value is `/root`, which is not accessible by the fcgiwrap user, because it is running as `nginx`.
+          #   The home path does not need to exist, but it must be accessible by the fcgiwrap user, because is tries to look for the git configuration there and issues a warning if it cannot access it:
+          #   ```sh
+          #   $ git clone http://nginx-smart-http.git-server.svc.cluster.local/git/smart/k8s6r.git
+          #   Cloning into 'k8s8r'...
+          #   remote: warning: unable to access '/root/.config/git/attributes': Permission denied
+          #   ```
+          HOME=/nonexistent spawn-fcgi -u nginx -g nginx -s /var/run/fcgiwrap.socket -U nginx -G nginx -M 0600 -P /var/run/fcgiwrap.pid -- /usr/sbin/fcgiwrap
+          # start the nginx process
+          nginx -g "daemon off;"
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+          # NOTE: This is not a best idea in production setting neither. Again, just build that Docker image, push it and
+          # deploy that instead patching bare-bones image with various configuration files mounted as volumes.
+        - name: config
+          mountPath: /etc/nginx/conf.d
+          # This is where the Git repositories live.
+        - name: hostfs
+          readOnly: true
+          mountPath: /mnt/git/
+          subPath: workload/git-server/repositories/
+      volumes:
+      - name: config
+        configMap:
+          name: nginx-smart-http-config
+      - name: hostfs
+        persistentVolumeClaim:
+          claimName: hostfs-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-smart-http
+  namespace: git-server
+spec:
+  selector:
+    app: nginx-smart-http
+  ports:
+  - port: 80
+    targetPort: 8080
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: nginx-smart-http
+  namespace: git-server
+  labels:
+    app: nginx-smart-http
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: example.tld
+    http:
+      paths:
+      - path: /git/smart/
+        pathType: Prefix
+        backend:
+          service:
+            name: nginx-smart-http
+            port:
+              number: 80
