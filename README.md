@@ -45,6 +45,7 @@ An example Kubernetes cluster with working examples.
 
 ### Workload
 
+- [Static Page](./workload/static-page/README.md): Simple static web page.
 - [Git Server](./workload/git-server/README.md): Git server providing access to repositories over HTTP.
 
 

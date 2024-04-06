@@ -1,0 +1,80 @@
+# Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: static-page-deployment
+  namespace: static-page
+spec:
+  # ReplicaSet
+  replicas: 1
+  selector:
+    # ReplicaSet identifies its Pods by matching these labels
+    matchLabels:
+      app: static-page-pod-label
+  template:
+    # Pod
+    metadata:
+      # Pods will have these labels attached to themselves
+      labels:
+        app: static-page-pod-label
+    spec:
+      containers:
+      - name: static-page-container
+        image: nginx:alpine-slim
+        ports:
+          - protocol: TCP
+            containerPort: 80
+        # Mount the volume containing the static HTML file
+        volumeMounts:
+          # NOTE: This is not a good idea in production setting. Just build that Docker image (there are files for that
+          # provided as well: have a look at the `docker` directory), push it to the registry and deploy that instead of
+          # generic bare-bones image patched by various mounts. It is done here this way because it makes it easier
+          # to make changes in this kind of minimal NON-PRODUCTION FOR-DEMONSTRATION-ONLY example.
+        - name: static-page-content # Deployment::spec.template.spec.volumes[].name
+          mountPath: /usr/share/nginx/html # NginX default path for serving static files
+      volumes:
+      # Define the ConfigMap as a volume
+      - name: static-page-content
+        configMap:
+          name: static-page-configmap-content # ConfigMap::metadata.name
+---
+apiVersion: v1
+kind: Service
+# Service
+metadata:
+  name: static-page-service
+  namespace: static-page
+  labels:
+    # Service will have these labels attached to itself
+    app: static-page-service-label
+spec:
+  ports:
+  - protocol: TCP
+    targetPort: 80 # Deployment::spec.template.spec.containers[].ports[].containerPort
+    port: 80 # port exposed by the Service
+  selector:
+    # Service will route traffic to Pods with matching labels
+    app: static-page-pod-label
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+# Ingress
+metadata:
+  name: static-page-ingress
+  namespace: static-page
+  labels:
+    # Ingress will have these labels attached to itself
+    app: static-page-ingress-label
+spec:
+  ingressClassName: nginx  # This Ingress will be handled by the NginX Ingress Controller
+  rules:
+  - host: example.tld
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: static-page-service # Service::metadata.name
+            port:
+              number: 80 # Service::spec.ports[].port
