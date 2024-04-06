@@ -1,0 +1,21 @@
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+name: k8s-in-docker
+networking:
+  ipFamily: dual
+nodes:
+  - role: control-plane
+    labels:
+      role: control-plane
+      name: control-plane-00
+    extraMounts:
+      - hostPath: ./../../
+        containerPath: /mnt/hostfs
+  - role: worker
+    labels:
+      name: worker-00
+      role: worker
+      worker-group: blue
+    extraMounts:
+      - hostPath: ./../../
+        containerPath: /mnt/hostfs

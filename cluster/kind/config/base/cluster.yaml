@@ -1,0 +1,32 @@
+# documentation: https://kind.sigs.k8s.io/docs/user/configuration
+# source code: https://github.com/kubernetes-sigs/kind/blob/v0.22.0/pkg/apis/config/v1alpha4/types.go
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+name: k8s-in-docker
+networking:
+  ipFamily: dual
+nodes:
+  - role: control-plane
+    labels:
+      role: control-plane
+      name: control-plane-00
+  - role: worker
+    labels:
+      name: worker-00
+      role: worker
+      worker-group: blue
+  # - role: worker
+  #   labels:
+  #     name: worker-01
+  #     role: worker
+  #     worker-group: green
+  #- role: worker
+  #  labels:
+  #    name: worker-02
+  #    role: worker
+  #    worker-group: blue
+  #- role: worker
+  #  labels:
+  #    name: worker-03
+  #    role: worker
+  #    worker-group: green
