@@ -53,4 +53,12 @@ An example Kubernetes cluster with working examples.
 - [Static Page](./workload/static-page/README.md): Simple static web page.
 - [Git Server](./workload/git-server/README.md): Git server providing access to repositories over HTTP.
 
+## Usage
+
+- scripts
+  - [start.sh](./start.sh): Bootstrap the Kubernetes cluster with all the workloads.
+  - [stop.sh](./stop.sh): Tear down the Kubernetes cluster. Note that any changes will be lost.
+
+Alternatively, each component can be manipulated using its specific scripts described in the respective read-me files.
+
 
