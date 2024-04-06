@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shell
+  namespace: debug
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: shell
+  template:
+    metadata:
+      labels:
+        app: shell
+    spec:
+      containers:
+      - name: shell
+        image: debian:stable-backports
+        volumeMounts:
+        - name: hostfs
+          mountPath: /mnt/hostfs
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          apt-get update -qqy
+          apt-get install -qqy \
+            curl \
+            dnsutils \
+            git \
+            iproute2 \
+            iputils-ping \
+            jq \
+            less \
+            lsof \
+            ltrace \
+            net-tools \
+            procps \
+            sipcalc \
+            strace \
+            tcpdump \
+            telnet \
+            tmux \
+            vim \
+            wget
+          sleep infinity
+      volumes:
+      - name: hostfs
+        hostPath:
+          path: /mnt/hostfs
+          type: Directory

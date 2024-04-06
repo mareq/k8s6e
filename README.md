@@ -18,4 +18,7 @@ An example Kubernetes cluster with working examples.
 
 - [Common](./cluster/common/README.md): Common general cluster configuration/deployments.
 
+### Debug
+
+- [Debug](./debug/shell/README.md): The troubleshooting pod providing interactive shell running inside the Kubernetes cluster.
 
