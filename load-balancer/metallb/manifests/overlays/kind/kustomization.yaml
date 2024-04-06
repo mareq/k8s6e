@@ -1,0 +1,18 @@
+resources:
+- ../../base
+patches:
+  - target:
+      group: metallb.io
+      version: v1beta1
+      kind: IPAddressPool
+      name: example
+    patch: |-
+      - op: replace
+        path: /metadata/name
+        value: kind-external-ips
+  - path: set-ip-address-pool-range.yaml
+    target:
+      group: metallb.io
+      version: v1beta1
+      kind: IPAddressPool
+      name: example
