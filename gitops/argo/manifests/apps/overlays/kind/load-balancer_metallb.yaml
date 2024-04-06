@@ -1,0 +1,17 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: load-balancer
+spec:
+  project: default
+  source:
+    repoURL: <set-by-the-kustomize-overlay>
+    targetRevision: master
+    path: load-balancer/metallb/manifests/overlays/kind
+  destination:
+    server: https://kubernetes.default.svc
+  syncPolicy:
+    automated:
+      prune: false
+      selfHeal: false
+      allowEmpty: false

@@ -34,6 +34,11 @@ An example Kubernetes cluster with working examples.
 
 - [Debug](./debug/shell/README.md): The troubleshooting pod providing interactive shell running inside the Kubernetes cluster.
 
+### GitOps
+
+- [ArgoCD](./gitops/argo/README.md): Declarative GitOps continuous delivery tool.
+- _FluxCD_: Continuous delivery tool for Kubernetes. [TODO]
+
 ### Load Balancer
 
 - [MetalLB](./load-balancer/metallb/README.md): Load balancer for bare metal Kubernetes clusters (such as KinD).

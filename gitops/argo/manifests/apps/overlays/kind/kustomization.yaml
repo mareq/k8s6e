@@ -1,0 +1,34 @@
+resources:
+- ../../base
+- git-server_nginx-smart-http.yaml
+- load-balancer_metallb.yaml
+namespace: argocd
+patches:
+  # Source Git repository
+  - target:
+      group: argoproj.io
+      kind: Application
+    patch: |-
+      - op: replace
+        path: /spec/source/repoURL
+        value: http://nginx-smart-http.git-server.svc.cluster.local/git/smart/k8s6r.git
+  # Automated Sync Policy
+  - target:
+      group: argoproj.io
+      kind: Application
+    patch: |-
+      - op: replace
+        path: /spec/syncPolicy/automated
+        value:
+          prune: true
+          selfHeal: true
+          allowEmpty: true
+  # Self-managed ArgoCD Kustomize overlay path
+  - target:
+      group: argoproj.io
+      kind: Application
+      name: argo-cd
+    patch: |-
+      - op: replace
+        path: /spec/source/path
+        value: gitops/argo/manifests/argo/overlays/kind

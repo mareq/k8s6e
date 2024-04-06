@@ -1,0 +1,43 @@
+resources:
+- ../../base
+namespace: argocd
+patches:
+  # Git Repository Definition: URL
+  - target:
+      group: ""
+      version: v1
+      kind: Secret
+      name: argo-cd-apps-git-repository
+    patch: |-
+      - op: replace
+        path: /stringData/url
+        value: http://nginx-smart-http.git-server.svc.cluster.local/git/smart/k8s6r.gi
+  # Git Repository URL in all Applications
+  - target:
+      group: argoproj.io
+      version: v1alpha1
+      kind: Application
+    patch: |-
+      - op: replace
+        path: /spec/source/repoURL
+        value: http://nginx-smart-http.git-server.svc.cluster.local/git/smart/k8s6r.git
+  # App-of-Apps Kustomize overlay path
+  - target:
+      group: argoproj.io
+      version: v1alpha1
+      kind: Application
+      name: argo-cd-app-of-apps
+    patch: |-
+      - op: replace
+        path: /spec/source/path
+        value: gitops/argo/manifests/app-of-apps/overlays/kind
+  # Child-Apps Kustomize overlay path
+  - target:
+      group: argoproj.io
+      version: v1alpha1
+      kind: Application
+      name: argo-cd-apps
+    patch: |-
+      - op: replace
+        path: /spec/source/path
+        value: gitops/argo/manifests/apps/overlays/kind

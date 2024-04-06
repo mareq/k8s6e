@@ -1,0 +1,38 @@
+resources:
+- ../../base
+patches:
+  # plain HTTP is ok for the demo-purpuses
+  - path: add-conainer-arg_insecure.yaml
+    target:
+      group: apps
+      version: v1
+      kind: Deployment
+      name: argocd-server
+  # plain HTTP is ok for the demo-purpuses
+  - target:
+      group: ""
+      version: v1
+      kind: ConfigMap
+      name: argocd-cm
+    patch: |-
+      - op: replace
+        path: /data/timeout.reconciliation
+        value: 30s
+  # dex-server is not needed for the demo-purpuses
+  - target:
+      name: .*dex-server
+    patch: |-
+      apiVersion: <ignored>
+      kind: <ignored>
+      metadata:
+        name: <ignored>
+      $patch: delete
+  # notifications-controller is not needed for the demo-purpuses
+  - target:
+      name: .*notifications-controller
+    patch: |-
+      apiVersion: <ignored>
+      kind: <ignored>
+      metadata:
+        name: <ignored>
+      $patch: delete

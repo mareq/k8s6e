@@ -1,0 +1,17 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: shell
+spec:
+  project: default
+  source:
+    repoURL: <set-by-the-kustomize-overlay>
+    targetRevision: master
+    path: debug/shell/manifests/overlays/default
+  destination:
+    server: https://kubernetes.default.svc
+  syncPolicy:
+    automated:
+      prune: false
+      selfHeal: false
+      allowEmpty: false
