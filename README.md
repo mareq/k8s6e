@@ -38,6 +38,11 @@ An example Kubernetes cluster with working examples.
 
 - [MetalLB](./load-balancer/metallb/README.md): Load balancer for bare metal Kubernetes clusters (such as KinD).
 
+### Ingress Controller
+
+- [NginX](./ingress-controller/nginx/README.md): Ingress Controller based on NginX.
+- _Traefik_: Traefik Ingress Controller based on Traefik. [TODO]
+
 ### Workload
 
 - [Git Server](./workload/git-server/README.md): Git server providing access to repositories over HTTP.
